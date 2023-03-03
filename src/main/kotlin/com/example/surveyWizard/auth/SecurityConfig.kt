@@ -26,7 +26,7 @@ class SecurityConfig(
         // Define public and private routes
         http.authorizeHttpRequests()
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/v1/users/**").authenticated()
+            .requestMatchers(HttpMethod.GET, "/api/v1/users/**").hasRole("ADMIN")
             .anyRequest().authenticated()
 
         // Configure JWT
@@ -35,7 +35,7 @@ class SecurityConfig(
             val jwt = auth as BearerTokenAuthenticationToken
             val user = tokenService.parseToken(jwt.token)
                 ?: throw InvalidBearerTokenException("Invalid token")
-            UsernamePasswordAuthenticationToken(user, "", listOf(SimpleGrantedAuthority("USER")))
+            UsernamePasswordAuthenticationToken(user, "", listOf(SimpleGrantedAuthority(user.roles)))
         }
 
         // Other configuration

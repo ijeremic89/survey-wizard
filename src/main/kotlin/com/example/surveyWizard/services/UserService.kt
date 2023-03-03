@@ -19,11 +19,13 @@ class UserService(
 ) {
 
     fun login(loginDTO: LoginDTO): LoginResponseDTO {
-        if (repository.findByEmail(loginDTO.email).isPresent) {
-            return LoginResponseDTO(tokenService.createToken(loginDTO))
-        } else {
-            throw BadCredentialsException("Invalid username/password supplied")
+        val optionalUser = repository.findByEmail(loginDTO.email)
+        if (optionalUser.isEmpty ||
+            !optionalUser.get().password?.let { hashService.checkBcrypt(loginDTO.password, it) }!!) {
+            throw BadCredentialsException("Invalid username/password supplied");
         }
+
+        return LoginResponseDTO(tokenService.createToken(loginDTO))
     }
 
     fun register(registerDTO: RegisterDTO): UserDTO {
